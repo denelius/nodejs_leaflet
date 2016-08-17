@@ -1,0 +1,38 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+#map {
+  height: 100%;
+}
+body {
+  margin:0;
+  padding:0px;
+  font:14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+  color:#00B7FF;
+}
+#leg, #leg_title {
+  position:absolute;
+  top:50px;
+  right:10px;
+  width:100px;
+  padding:10px;
+  background:rgba(34,34,34,1);
+  color:#999;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:12px;
+  line-height:18px;
+  border-radius:3px;
+  max-height:80%;
+  overflow:auto;
+}
+#leg_title {
+  top:10px;
+}
+#leg_items {
+  position:relative;
+  margin-left:5px;
+  top:-1px
+}
