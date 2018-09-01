@@ -8,6 +8,18 @@
  * @constructor ObjectId
  */
 
-var ObjectId = require('../drivers').ObjectId;
+var ObjectId = require('../driver').get().ObjectId;
+
+/*!
+ * Getter for convenience with populate, see gh-6115
+ */
+
+Object.defineProperty(ObjectId.prototype, '_id', {
+  enumerable: false,
+  configurable: true,
+  get: function() {
+    return this;
+  }
+});
 
 module.exports = ObjectId;

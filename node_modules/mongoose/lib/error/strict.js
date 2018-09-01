@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 
-var MongooseError = require('../error.js');
+var MongooseError = require('./');
 
 /**
  * Strict mode error constructor
@@ -13,15 +13,16 @@ var MongooseError = require('../error.js');
  * @api private
  */
 
-function StrictModeError(path) {
-  MongooseError.call(this, 'Field `' + path + '` is not in schema and strict ' +
-    'mode is set to throw.');
+function StrictModeError(path, msg) {
+  msg = msg || 'Field `' + path + '` is not in schema and strict ' +
+    'mode is set to throw.';
+  MongooseError.call(this, msg);
+  this.name = 'StrictModeError';
   if (Error.captureStackTrace) {
     Error.captureStackTrace(this);
   } else {
     this.stack = new Error().stack;
   }
-  this.name = 'StrictModeError';
   this.path = path;
 }
 

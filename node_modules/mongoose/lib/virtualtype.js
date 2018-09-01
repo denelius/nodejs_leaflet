@@ -6,10 +6,14 @@
  *
  * ####Example:
  *
- *     var fullname = schema.virtual('fullname');
+ *     const fullname = schema.virtual('fullname');
  *     fullname instanceof mongoose.VirtualType // true
  *
- * @parma {Object} options
+ * @param {Object} options
+ * @param {string|function} [options.ref] if `ref` is not nullish, this becomes a [populated virtual](/docs/populate.html#populate-virtuals)
+ * @param {string|function} [options.localField] the local field to populate on if this is a populated virtual.
+ * @param {string|function} [options.foreignField] the foreign field to populate on if this is a populated virtual.
+ * @param {boolean} [options.justOne=false] by default, a populated virtual is an array. If you set `justOne`, the populated virtual will be a single doc or `null`.
  * @api public
  */
 
@@ -19,6 +23,29 @@ function VirtualType(options, name) {
   this.setters = [];
   this.options = options || {};
 }
+
+/**
+ * If no getters/getters, add a default
+ *
+ * @param {Function} fn
+ * @return {VirtualType} this
+ * @api public
+ */
+
+VirtualType.prototype._applyDefaultGetters = function() {
+  if (this.getters.length > 0 || this.setters.length > 0) {
+    return;
+  }
+
+  const path = this.path;
+  const internalProperty = '$' + path;
+  this.getters.push(function() {
+    return this[internalProperty];
+  });
+  this.setters.push(function(v) {
+    this[internalProperty] = v;
+  });
+};
 
 /**
  * Defines a getter.

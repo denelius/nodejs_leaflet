@@ -27,6 +27,7 @@ a {
   border-radius:3px;
   max-height:80%;
   overflow:auto;
+  z-index: 999;
 }
 #leg_title {
   top:10px;

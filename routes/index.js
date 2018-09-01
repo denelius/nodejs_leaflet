@@ -5,7 +5,7 @@ var router = express.Router();
 var mongoose = require('mongoose');
 
 // Mongoose connection to MongoDB
-mongoose.connect('mongodb://localhost/leaflet_map', function (error) {
+mongoose.connect('mongodb://localhost/leaflet_map', { useNewUrlParser: true }, function (error) {
     if (error) {
         console.log(error);
     }
@@ -22,7 +22,7 @@ var JsonSchema = new Schema({
 var Json = mongoose.model('JString', JsonSchema, 'layercollection');
 
 /* GET home page. */
-router.get('/', function(req, res) {
+router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
@@ -44,7 +44,6 @@ router.get('/maplayers', function (req, res) {
 
 /* GET Map page. */
 router.get('/map', function(req,res) {
-    var db = req.db;
     Json.find({},{}, function(e,docs){
         res.render('map', {
             "jmap" : docs,

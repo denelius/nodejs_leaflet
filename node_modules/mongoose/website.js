@@ -1,15 +1,39 @@
-var fs = require('fs');
-var jade = require('jade');
-var package = require('./package');
-var hl = require('./docs/helpers/highlight');
-var linktype = require('./docs/helpers/linktype');
-var href = require('./docs/helpers/href');
-var klass = require('./docs/helpers/klass');
+'use strict';
 
-// add custom jade filters
-require('./docs/helpers/filters')(jade);
+const acquit = require('acquit');
+const fs = require('fs');
+const jade = require('jade');
+const pkg = require('./package');
+const linktype = require('./docs/helpers/linktype');
+const href = require('./docs/helpers/href');
+const klass = require('./docs/helpers/klass');
+const transform = require('acquit-require');
+
+require('acquit-ignore')();
+
+const markdown = require('marked');
+const highlight = require('highlight.js');
+markdown.setOptions({
+  highlight: function(code) {
+    return highlight.highlight('JavaScript', code).value;
+  }
+});
+
+jade.filters.markdown = markdown;
+
+const tests = [
+  ...acquit.parse(fs.readFileSync('./test/webpack.test.js').toString()),
+  ...acquit.parse(fs.readFileSync('./test/geojson.test.js').toString()),
+  ...acquit.parse(fs.readFileSync('./test/docs/transactions.test.js').toString()),
+  ...acquit.parse(fs.readFileSync('./test/schema.alias.test.js').toString()),
+  ...acquit.parse(fs.readFileSync('./test/model.middleware.test.js').toString())
+];
 
 function getVersion() {
+  return require('./package.json').version;
+}
+
+function getLatestLegacyVersion(startsWith) {
   var hist = fs.readFileSync('./History.md', 'utf8').replace(/\r/g, '\n').split('\n');
   for (var i = 0; i < hist.length; ++i) {
     var line = (hist[i] || '').trim();
@@ -17,45 +41,44 @@ function getVersion() {
       continue;
     }
     var match = /^\s*([^\s]+)\s/.exec(line);
-    if (match && match[1]) {
+    if (match && match[1] && match[1].startsWith(startsWith)) {
       return match[1];
     }
   }
   throw new Error('no match found');
 }
 
-function getUnstable(ver) {
-  ver = ver.replace('-pre');
-  var spl = ver.split('.');
-  spl = spl.map(function(i) {
-    return parseInt(i, 10);
-  });
-  spl[1]++;
-  spl[2] = 'x';
-  return spl.join('.');
-}
-
 // use last release
-package.version = getVersion();
-package.unstable = getUnstable(package.version);
+pkg.version = getVersion();
+pkg.latest4x = getLatestLegacyVersion('4.');
+pkg.latest38x = getLatestLegacyVersion('3.8');
 
 var filemap = require('./docs/source');
 var files = Object.keys(filemap);
 
 function jadeify(filename, options, newfile) {
   options = options || {};
-  options.package = package;
-  options.hl = hl;
+  options.package = pkg;
   options.linktype = linktype;
   options.href = href;
   options.klass = klass;
-  jade.renderFile(filename, options, function(err, str) {
+
+  let contents = fs.readFileSync(filename).toString();
+
+  if (options.acquit) {
+    contents = transform(contents, tests);
+  }
+
+  options.filename = filename;
+
+  jade.render(contents, options, function(err, str) {
     if (err) {
       console.error(err.stack);
       return;
     }
 
     newfile = newfile || filename.replace('.jade', '.html');
+
     fs.writeFile(newfile, str, function(err) {
       if (err) {
         console.error('could not write', err.stack);
@@ -79,9 +102,9 @@ files.forEach(function(file) {
   }
 });
 
-var acquit = require('./docs/source/acquit');
-var acquitFiles = Object.keys(acquit);
+const _acquit = require('./docs/source/acquit');
+const acquitFiles = Object.keys(_acquit);
 acquitFiles.forEach(function(file) {
   var filename = __dirname + '/docs/acquit.jade';
-  jadeify(filename, acquit[file], __dirname + '/docs/' + file);
+  jadeify(filename, _acquit[file], __dirname + '/docs/' + file);
 });

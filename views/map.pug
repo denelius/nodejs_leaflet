@@ -1,5 +1,4 @@
 extends layout.pug
-
 block content
     #map
     #leg_title 
@@ -9,6 +8,7 @@ block content
             input(id=layer.name)(type='checkbox', checked)
             span#leg_items #{layer.name}
             br
+
     script(type='text/javascript').
         var map = L.map('map').setView([#{lat},#{lng}], 14);
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -20,7 +20,7 @@ block content
                 $.getJSON('/mapjson/' + mlayer.name, function(data) { addLayer(data, mlayer.name ) });
             });
         });
-  
+
         function addLayer(layer, name) {
             var leaf_layer;
             if (layer.type == "MultiPoint") {
@@ -33,18 +33,8 @@ block content
                 leaf_layer = L.geoJson(layer, {
                     style: function(feature) {
                         switch (feature.properties.style) {
-                        case 'Orange': return {
-                            fillColor: "#e9bc3b",
-                            color: "#ac8613",
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        };
-                        case 'Blue': return {
-                            fillColor: "#0099ff",
-                            color: "#005f9d",
-                            opacity: 1,
-                            fillOpacity: 0.8
-                        };
+                        case 'Orange': return {color: "#ff0000"};
+                        case 'Blue': return {color: "#0000ff"};
                     }
                     },
                     onEachFeature: function (feature, layer) {

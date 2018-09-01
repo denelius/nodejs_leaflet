@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var MongooseError = require('../error.js');
+var MongooseError = require('./');
 
 /*!
  * DivergentArrayError constructor.
@@ -20,11 +20,15 @@ function DivergentArrayError(paths) {
           + 'path(s) would have been modified unsafely:\n'
           + '  ' + paths.join('\n  ') + '\n'
           + 'Use Model.update() to update these arrays instead.';
-          // TODO write up a docs page (FAQ) and link to it
+  // TODO write up a docs page (FAQ) and link to it
 
   MongooseError.call(this, msg);
-  Error.captureStackTrace && Error.captureStackTrace(this, arguments.callee);
   this.name = 'DivergentArrayError';
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this);
+  } else {
+    this.stack = new Error().stack;
+  }
 }
 
 /*!
